@@ -1,0 +1,24 @@
+FROM alpine:3.20
+
+RUN apk add --no-cache \
+    clang \
+    llvm \
+    lld \
+    make \
+    git \
+    patch \
+    bison \
+    flex \
+    ncurses-dev \
+    openssl-dev \
+    elfutils-dev \
+    bc \
+    xz \
+    lz4 \
+    zstd \
+    perl \
+    python3 \
+    bash
+
+WORKDIR /build
+CMD ["/bin/bash"]

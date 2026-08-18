@@ -1,0 +1,81 @@
+# Maintainer: CoraOS <support@coraos.org>
+# Maintainer: FusionTech <fusiontechorganization@protonmail.com>
+# Maintainer:
+#
+#
+pkgname=linux-matterhorn
+pkgver=6.18.44
+pkgrel=0
+pkgdesc="Matterhorn kernel, performance enhancing tweaks applied"
+url="https://github.com/Cora-linux/matterhorn-kernel"
+arch="x86_64"
+license="GPL-2.0-only"
+options="!strip !check"
+_flavor="matterhorn"
+depends="mkinitfs"
+makedepends="
+	clang
+	llvm
+	lld
+	make
+	bison
+	flex
+	ncurses-dev
+	openssl-dev
+	elfutils-dev
+	bc
+	xz
+	lz4
+	zstd
+	perl
+	python3
+"
+subpackages="$pkgname-dev:_dev"
+source="
+	https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-$pkgver.tar.xz
+	config
+	$pkgname.trigger
+"
+builddir="$srcdir/linux-$pkgver"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/config" .config
+	make olddefconfig
+}
+
+build() {
+	make -j"$JOBS" \
+		LLVM=1 \
+		LLVM_IAS=1
+}
+
+package() {
+	make \
+		INSTALL_MOD_PATH="$pkgdir" \
+		modules_install
+
+	install -Dm644 arch/x86/boot/bzImage \
+		"$pkgdir/boot/vmlinuz-$_flavor"
+	install -Dm644 System.map \
+		"$pkgdir/boot/System.map-$_flavor"
+	install -Dm644 .config \
+		"$pkgdir/boot/config-$_flavor"
+}
+
+_dev() {
+	default_dev
+
+	cd "$builddir"
+	install -d "$subpkgdir/usr/src/linux-headers-$_flavor"
+	cp -a include Module.symvers Makefile .config \
+		"$subpkgdir/usr/src/linux-headers-$_flavor/"
+}
+
+triggers="$pkgname.trigger=/boot:/lib/modules"
+
+sha512sums="
+cb710375eb0dccdb8ac49db46517556b9e6d56d7ed5430336158cc63b6104366672964737508819ef49de03c9a7a02079027f2271748c6677bc7c32944631589  linux-6.18.44.tar.xz
+6911f169d081cf9ce5aedf16d3897bc908d998f8e9e071928914e67452533c4f9f343866d9117a3684a3bbe1e2125a7640d98968af4da0105d1869c0bbf7a5e9  config
+6e1bac9f36cba7755892c1c260ad5d890ad97ed798421387b1b04172734e6db707591701d786013134e9d1612b5f3ddaa3ff6a02a8171c519a4a3a7b0f7b9bdf  linux-matterhorn.trigger
+"

@@ -1,1 +1,0 @@
-/home/fusiontech/matterhorn/matterhorn/linux-matterhorn.trigger
